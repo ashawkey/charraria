@@ -191,7 +191,7 @@ class Slime extends Monster{
     public ArrayList<Entity> Drops(){
         ArrayList<Entity> drops=new ArrayList<Entity>();
         int r=rand.nextInt(100);
-        if(r>0){
+        if(r>50){
             drops.add(new Arrow());
         }
         return drops;

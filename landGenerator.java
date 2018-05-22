@@ -36,19 +36,22 @@ public class landGenerator{
 
 
     private static Block [][] world = new Block[WORLD_HEIGHT][WORLD_WID];
-    public static Block getWorldBlock(int i,int j){
-        return world[i][j];
+    public static Block getWorldBlock(int y,int x){
+        return world[y][x];
     }
-    public static Entity getWorldEntity(int i,int j){
-        return frontWorld[i][j];
+    public static Entity getWorldEntity(int y,int x){
+        return frontWorld[y][x];
     }
-    public static void changeWorldBlock(int i,int j,Block b){
-        world[i][j]=b;
+    public static void changeWorldBlock(int y,int x,Block b){
+        world[y][x]=b;
     }
-    public static void changeWorldEntity(int i,int j,Entity e){
-        frontWorld[i][j]=e;
+    public static void changeWorldEntity(int y,int x,Entity e){
+        frontWorld[y][x]=e;
     }
 
+    public static boolean inWorld(int x, int y){
+        return (x>=1 && x<WORLD_WID-1 && y>=1 && y<WORLD_HEIGHT-1);
+    }
 
     private static Block[][] backWorld = new Block[WORLD_HEIGHT][WORLD_WID];
     private static Entity[][] frontWorld = new Entity[WORLD_HEIGHT][WORLD_WID];
@@ -57,7 +60,7 @@ public class landGenerator{
 
     public void draw(Graphics g) {
         for(int i=Focus_x-window_offset_x;i<=Focus_x+window_offset_x;i++){
-            for(int j=Focus_y-window_offset_y ;j<=Focus_y+window_offset_y;j++){
+            for(int j=Focus_y+window_offset_y ;j>=Focus_y-window_offset_y;j--){
                 if(i>=0 && i<WORLD_WID && j>=0 && j<WORLD_HEIGHT){
                     //backgroud layer
                     if(backWorld[j][i]!=null) {
@@ -68,10 +71,47 @@ public class landGenerator{
                     }
                     //solid&&fluid layer
                     if(world[j][i]!=null) {
-                        g.setFont(mainFont);
                         Block b = world[j][i];
+                        g.setFont(mainFont);
                         g.setColor(b.color);
-                        //正在被破坏，闪烁。
+                        //water flow animation
+                        if(b instanceof Water) {
+                            if(((Water) b).volume<=1) {
+                                b=new Air(0);
+                                continue;
+                            }
+                            int dx[]={0,1,-1};
+                            int dy[]={-1,0,0};
+                            for(int d=0;d<3;d++){
+                                if(inWorld(i+dx[d],j+dy[d])) {
+                                    Block nb = world[j + dy[d]][i + dx[d]];
+                                    if (nb instanceof Air) {
+                                        if (((Water) b).volume >= 2) {
+                                            changeWorldBlock(j + dy[d], i + dx[d], new Water(1));
+                                        }
+                                        ((Water) b).modifyVol(-1);
+                                    }
+                                    if (nb instanceof Water) {
+                                        if (((Water) nb).volume < ((Water) b).volume) {
+                                            if (d == 0) {
+                                                int remedy = 10 - ((Water) nb).volume;
+                                                if (((Water) b).volume > remedy) {
+                                                    ((Water) nb).modifyVol(remedy);
+                                                    ((Water) b).modifyVol(-remedy);
+                                                } else {
+                                                    ((Water) nb).modifyVol(((Water) b).volume);
+                                                    ((Water) b).volume = 0;
+                                                }
+                                            } else {
+                                                ((Water) nb).modifyVol(1);
+                                                ((Water) b).modifyVol(-1);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //being damaged, blink animation
                         if (b instanceof solidBlock && ((solidBlock) b).Flag_damaged != 0) {
                             System.out.println("block blinking");
                             if (--((solidBlock) b).Flag_damaged % 2 == 0)
@@ -82,6 +122,13 @@ public class landGenerator{
                     //entity layer
                     if(frontWorld[j][i]!=null)  {
                         Entity e=frontWorld[j][i];
+                        if(e instanceof SolidMobsEntity){
+                            if(((SolidMobsEntity) e).m==null || ((SolidMobsEntity) e).m.getHP()<=0 ) {
+                                System.out.println("clear mobs");
+                                changeWorldEntity(j,i,new Entity());
+                                continue;
+                            }
+                        }
                         g.setFont(entityFont);
                         g.setColor(e.color);
                         g.drawString(String.valueOf(e.symbol),(i-(Focus_x-window_offset_x))*fontSize,MainWindow.getWinHeight()-(j-(Focus_y-window_offset_y))*fontSize);
@@ -102,27 +149,9 @@ public class landGenerator{
         }
     }
     public void GrassLandGenesis(){
-        for(int j=WORLD_WID/2+10;j<WORLD_WID;j++){
-            int jj=j-WORLD_WID/2-10;
-            double n=(ImprovedNoise.noise(jj*(1.0/300.0),0,0)+
-                    ImprovedNoise.noise(jj*(1.0/150.0),0,0)*0.5+
-                    ImprovedNoise.noise(jj*(1.0/75.0),0,0)*0.25+
-                    ImprovedNoise.noise(jj*(1.0/37.5),0,0)*0.125)*100;
-            if(n>0){
-                for(int i=0;i<n;i++){
-                    if(i+1>n) world[WORLD_HEIGHT/2+i][j]=new grassDirt();
-                    else world[WORLD_HEIGHT/2+i][j]=new Dirt();
-                }
-            }
-            else{
-                for(int i=0;i>n;i--){
-                    if(i-1<n)world[WORLD_HEIGHT/2+i][j]=new grassDirt();
-                    else world[WORLD_HEIGHT/2+i][j]=new Air(0);
-                }
-            }
-        }
-        for(int j=WORLD_WID/2-10;j>=0;j--){
-            int jj=j-WORLD_WID/2+10;
+        int offset=r.nextInt(100);
+        for(int j=0;j<WORLD_WID;j++){
+            int jj=j+offset;
             double n=(ImprovedNoise.noise(jj*(1.0/300.0),0,0)+
                     ImprovedNoise.noise(jj*(1.0/150.0),0,0)*0.5+
                     ImprovedNoise.noise(jj*(1.0/75.0),0,0)*0.25+
@@ -141,15 +170,12 @@ public class landGenerator{
             }
         }
     }
-    public void PoolGenesis(){
-        int Pooltotal=10;
-        for(int z=0;z<Pooltotal;z++){
-            int PoolX=z*WORLD_WID/Pooltotal+(int)r.nextGaussian()*5;
-            int PoolY=(int)r.nextGaussian()*7;
-            int PoolW=(int)r.nextGaussian()*10;
-            for(int j=0;j>-PoolY;j--){
-                for(int i=PoolX;i<PoolW;i++){
-                    world[j][i]=new Water();
+    public void WaterGenesis(){
+        for(int j=1;j<WORLD_HEIGHT/2;j++){
+            for(int i=1;i<WORLD_HEIGHT-1;i++){
+                if(world[j][i].BlockNo==0){
+                    System.out.println("Water genesis");
+                    world[j][i]=new Water(10);
                 }
             }
         }
@@ -216,7 +242,6 @@ public class landGenerator{
         }
     }
     public void CloudGenesis(){
-
         for(int j=WORLD_HEIGHT/2+CloudHeight;j<WORLD_HEIGHT-1;j++){
             for(int i=1;i<WORLD_WID-1;i++){
                 if( backWorld[j][i-1]!=null || backWorld[j][i+1]!=null){
@@ -239,6 +264,36 @@ public class landGenerator{
     }
     public void HoleGenesis(){
         //perlin worms
+        int totalWorms=80;
+        while(totalWorms--!=0){
+            int x=r.nextInt(WORLD_WID);
+            int y=r.nextInt(WORLD_HEIGHT/2);
+            int life=r.nextInt(100)+50;
+            double radius=r.nextGaussian()*5;
+            while(life--!=0){
+                double nx=ImprovedNoise.noise(x*0.06,y*0.02,0);
+                double ny=ImprovedNoise.noise(x*0.03,y*0.04,0);
+                System.out.println(totalWorms+" "+nx+" "+ny);
+                if(nx>0) x++; else x--;
+                if(ny>0) y++; else y--;
+                for(int xi=x-(int)radius;xi<x+(int)radius;xi++){
+                    for(int yi=y-(int)radius;yi<y+(int)radius;yi++){
+                        if(Math.sqrt(Math.pow((xi-x),2)+Math.pow((yi-y),2))<radius && inWorld(xi,yi))
+                            world[yi][xi]=new Water(10);
+                    }
+                }
+
+            }
+        }
+        //pockets
+        for(int j=1;j<WORLD_HEIGHT/2;j++){
+            for(int i=1;i<WORLD_WID-1;i++){
+                if(i>WORLD_WID/2+10 || i<WORLD_WID/2-10) {
+                    double n = ImprovedNoise.noise(j * 0.05, i * 0.05, 0);
+                    if (n < (-0.25)) world[j][i] = new Air(0);
+                }
+            }
+        }
     }
     public void PyramidGenesis(){
 
@@ -251,8 +306,8 @@ public class landGenerator{
         EndOfWorldGenesis();
         SlimTreeGenesis();
         CloudGenesis();
-        //HoleGenesis();
-        //PoolGenesis();
+        WaterGenesis();
+        HoleGenesis();
     }
 
 

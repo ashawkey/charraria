@@ -19,7 +19,7 @@ public abstract class Block {
 abstract class solidBlock extends Block {
     protected int life;
     protected int Flag_damaged;
-    public void modifyHP(int x) {life+=x;Flag_damaged=5;}
+    public void modifyHP(int x) {life+=x;Flag_damaged=2;}
     solidBlock(){
         super();
         permeable=false;
@@ -71,12 +71,19 @@ class grassDirt extends solidBlock{
 }
 
 class Water extends Fluid{
-    Water(){
+    public int volume;
+    public void modifyVol(int x){
+        if(volume+x>10 || volume+x<0) return;
+        volume+=x;
+        color=new Color(0,0,255,volume*25);
+    }
+    Water(int n){
         super();
         BlockNo=3;
         symbol='~';
-        color=Color.BLUE;
+        color=new Color(0,0,255, n*25);
         description="--water--";
+        volume=n;
     }
 }
 

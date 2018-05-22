@@ -28,6 +28,7 @@ public class MainPanel extends JPanel {
     MainPanel(){
         setFocusable(true);
         requestFocus();
+        setDoubleBuffered(true);
         addKeyListener(new MainKeyMonitor());
         MainMouseMonitor MMM=new MainMouseMonitor();
         addMouseListener(MMM);
@@ -121,7 +122,6 @@ public class MainPanel extends JPanel {
         private long DPressed=0;
         private long SPACEPressed=0;
         private long SPressed=0;
-
         public void keyReleased(KeyEvent e){
             switch(stat){
                 case STAT_GAME:
@@ -136,13 +136,14 @@ public class MainPanel extends JPanel {
                     break;
                 case STAT_START:
                     startKeyPressed(e);
+                    break;
+                case STAT_BAG:
+                    break;
             }
         }
-
         private void startKeyPressed(KeyEvent e){
 
         }
-
         private void gameKeyReleased(KeyEvent e){
             switch(e.getKeyCode()){
                 case VK_SPACE:
@@ -160,7 +161,6 @@ public class MainPanel extends JPanel {
             }
             locateDirection();
         }
-
         private void locateDirection(){
             Direction d=Direction.STOP;
             if(APressed>DPressed)
@@ -175,7 +175,6 @@ public class MainPanel extends JPanel {
                 d=Direction.STOP;
             Hero.setDir(d);
         }
-
         private void gameKeyPressed(KeyEvent e){
             switch(e.getKeyCode()){
                 case VK_SPACE:
@@ -208,13 +207,13 @@ public class MainPanel extends JPanel {
                 case VK_5:
                     Inventory.setCurrent(5);
                     break;
+                case VK_E:
 
+                    break;
             }
             locateDirection();
         }
     }
-
-
     private class MainMouseMonitor extends MouseAdapter {
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
@@ -283,7 +282,6 @@ public class MainPanel extends JPanel {
         }
 
     }
-
     volatile private boolean mouseDown=false;
     volatile private boolean Flag_mouseDown_running=false;
     private synchronized void initThread_mouseDown(){
@@ -348,7 +346,7 @@ public class MainPanel extends JPanel {
                 }
                 TimeClicked=System.currentTimeMillis();
                 //try destroy
-                ((solidBlock) b).life-=((Tools) inHand).DestroyAbility;
+                ((solidBlock) b).modifyHP(-((Tools) inHand).DestroyAbility);
                 System.out.println("life remain:"+((solidBlock) b).life);
                 if(((solidBlock) b).life<=0){
                     if(!Inventory.isFull()){

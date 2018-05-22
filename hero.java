@@ -38,7 +38,12 @@ public class hero extends Mobs{
         JUMPING_ABILITY=2;
         HP=10;
         x=landGenerator.getWorWidth()/2;
-        y=landGenerator.getWorHeight()/2;
+        for(int yy=0;yy<landGenerator.getWorHeight();yy++){
+            if(landGenerator.getWorldBlock(yy,x).BlockNo==0) {
+                y=yy;
+                break;
+            }
+        }
     }
     private int Flag_HPModified=0;
     public void modifyHP(int x){
