@@ -3,8 +3,8 @@ import java.awt.*;
 import java.util.ArrayList;
 
 abstract class Mobs{
-    protected int x;
-    protected int y;
+    protected  int x;
+    protected  int y;
     protected int HP;
     public int getHP(){
         return HP;
@@ -44,6 +44,18 @@ public class hero extends Mobs{
                 break;
             }
         }
+    }
+    public void sethX(int x_) {
+    	x=x_;
+    }
+    public void sethY(int y_) {
+    	y=y_;
+    }
+    public int gethX() {
+    	return x;
+    }
+    public int gethY() {
+    	return y;
     }
     private int Flag_HPModified=0;
     public void modifyHP(int x){

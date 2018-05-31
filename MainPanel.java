@@ -1,21 +1,27 @@
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
+import static java.awt.Color.blue;
 import static java.awt.event.KeyEvent.*;
 
 public class MainPanel extends JPanel {
     private static int dispearDistance=100;
-    private static int MaxMonsterNum=50;
+    private static int MaxMonsterNum=5;
+    public static Color dayNight;
+    public static int timer=0;
+    public static int heroX;
+    public static int heroY;
     public static final int STAT_GAME=0;
     public static final int STAT_PAUSE=1;
     public static final int STAT_START=2;
     public static final int STAT_BAG=3;
-    public static int stat=0;
-    public Thread GameThread;
+    public static int stat=2;
+    public Thread GameThread=null;
     private Random rand=new Random();
 
     private StringBuffer BlockDescription=new StringBuffer();
@@ -23,8 +29,16 @@ public class MainPanel extends JPanel {
 
     private landGenerator Land=new landGenerator();
     private hero Hero = new hero();
-    private inventory Inventory = new inventory();
+    private static inventory Inventory = new inventory();
+    private backpack bag=new backpack(Inventory.geta());
 
+    public static inventory getInventory() {
+    	return Inventory;
+    }
+    public static void setInventory(inventory Inv) {
+    	Inventory=Inv;
+    }
+    
     MainPanel(){
         setFocusable(true);
         requestFocus();
@@ -32,71 +46,182 @@ public class MainPanel extends JPanel {
         addKeyListener(new MainKeyMonitor());
         MainMouseMonitor MMM=new MainMouseMonitor();
         addMouseListener(MMM);
-        addMouseWheelListener(MMM);  //must add alone! not just mouseListener!
-        addMouseMotionListener(MMM);  //too, there are three different mouse listeners...
+        addMouseWheelListener(MMM);
+        addMouseMotionListener(MMM);
         Thread t=new MainThread();
         t.start();
     }
 
+    public static int gettimer(){return timer;}
+    public static void settimer(int i) {timer=i;}
     public void paintComponent(Graphics g){
         super.paintComponent(g);
-        Land.draw(g);
-        Hero.draw(g);
-        Inventory.draw(g);
-        //draw description
-        g.setFont(DescriptionFont);
-        g.setColor(Color.CYAN);
-        if(BlockDescription!=null) {
-            g.drawString(BlockDescription.toString(), 20, 50);
-        }
-        //draw monsters
-        Iterator<Monster> iM=Monsters.iterator();
-        while(iM.hasNext()){
-            Monster M=iM.next();
-            if(distance(M.getX(),0,Hero.getX(),0)>dispearDistance){
-                iM.remove();
-                landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
-            }
-            else if(!M.isAlive()){
-                //drops
-                ArrayList<Entity> drops=M.Drops();
-                for(Entity e:drops){
-                    Inventory.addEntity(e);
-                }
-                //remove
-                iM.remove();
-                landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
-            }
-        }
-        for(Monster M:Monsters){
-            M.draw(g);
-        }
-        //draw projectiles
-        for(Projectile p:projectiles){
-            p.draw(g);
-        }
+        switch(stat) {
+        case(STAT_START):
+        	paintStart(g);
+    		break;
+        case(STAT_GAME):
+        	Land.draw(g);
+        	Hero.draw(g);
+        	Inventory.draw(g);
+        	//draw description
+        	g.setFont(DescriptionFont);
+        	g.setColor(Color.CYAN);
+        	if(BlockDescription!=null) {
+        		g.drawString(BlockDescription.toString(), 20, 50);
+        	}
+        	//draw monsters
+        	Iterator<Monster> iM=Monsters.iterator();
+        	while(iM.hasNext()){
+        		Monster M=iM.next();
+        		if(distance(M.getX(),0,Hero.getX(),0)>dispearDistance){
+        			iM.remove();
+        			landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+        		}
+        		else if(!M.isAlive()){
+        			//drops
+        			ArrayList<Entity> drops=M.Drops();
+        			for(Entity e:drops){
+        				Inventory.addEntity(e);
+        			}
+        			//remove
+        			iM.remove();
+        			landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+        		}
+        	}
+        	for(Monster M:Monsters){
+        		M.draw(g);
+        	}
+        	//draw projectiles
+        	for(Projectile p:projectiles){
+        		p.draw(g);
+        	}
+        	break;
+        case(STAT_BAG):
+        	Land.draw(g);
+    		Hero.draw(g);
+    		Inventory.draw(g);
+    		//draw description
+    		g.setFont(DescriptionFont);
+    		g.setColor(Color.CYAN);
+    		if(BlockDescription!=null) {
+    			g.drawString(BlockDescription.toString(), 20, 50);
+    		}
+    		//draw monsters
+    		Iterator<Monster> iM1=Monsters.iterator();
+    		while(iM1.hasNext()){
+    			Monster M=iM1.next();
+    			if(distance(M.getX(),0,Hero.getX(),0)>dispearDistance){
+    				iM1.remove();
+    				landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+    			}
+    			else if(!M.isAlive()){
+    				//drops
+    				ArrayList<Entity> drops=M.Drops();
+    				for(Entity e:drops){
+    					Inventory.addEntity(e);
+    				}
+    				//remove
+    				iM1.remove();
+    				landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+    			}
+    		}
+    		for(Monster M:Monsters){
+    		M.draw(g);
+    		}
+    		//draw projectiles
+    		for(Projectile p:projectiles){
+    			p.draw(g);
+    		}
+        	bag.draw(g);
+        	break;
+        case(STAT_PAUSE):
+        	paintPause(g);
+    		break;
+        }       
+    }
+    void openBag() {
+    	if(stat != STAT_GAME)
+    		return;
+        ((MainThread)GameThread).flag=false;
+    	stat = STAT_BAG;
+    	repaint();
+    }
+    void gamePause() {
+        if (stat != STAT_GAME)
+            return;
+        ((MainThread)GameThread).flag=false;
+        stat = STAT_PAUSE;
+        repaint();
+    }
+    void gameResume() {
+        stat = STAT_GAME;
+        newThreads();
+        startThreads();
+    }
+    public void newThreads() {
+    	GameThread = new MainThread();
+    }    
+    public void startThreads() {
+    	GameThread.start();
+    }
+    
+    private void drawMiddleAlignedString(Graphics g, String s, int x, int y) {
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(s, x - fm.stringWidth(s) / 2, y);
+    }
+    private void paintStart(Graphics g) {
+    	Image image = Toolkit.getDefaultToolkit().getImage("start.jpg");
+    	g.drawImage(image,0,0,1200,700,this);
+        g.setFont(new Font("TimeeNewRoman",Font.BOLD,30));
+        g.setColor(Color.WHITE);
+        g.drawString("PRESS <ENTER> TO START GAME!",1200/2-250,700/2+50);
+    }
+    private void paintPause(Graphics g) {
+    	GameThread = new MainThread();
+        g.setColor(blue);
+        g.setFont(new Font("TimesNewRoman",Font.BOLD, 15));
+        drawMiddleAlignedString(g, "PAUSED", 1000 / 2, 290);
+        g.setFont(new Font("TimesNewRoman",Font.BOLD, 15));
+        drawMiddleAlignedString(g, "Press <ENTER> To Continue", 1000 / 2, 335);
+        drawMiddleAlignedString(g, "Press <F11> To Save Game", 1000 / 2, 365);
+        drawMiddleAlignedString(g, "Press <E12> To Load Game", 1000 / 2, 395);
+    }
+    public void setDayNightColor(int time){
+        System.out.println(time+" "+Math.abs(time-3600)/3600.0);
+        double timerScale=(Math.abs(time-3600)/3600.0);
+        dayNight=new Color((int)(255*timerScale),(int)(255*timerScale),(int)(255*timerScale));
+        this.setBackground(dayNight);
     }
     private class MainThread extends Thread {
+        public boolean flag=true;
         public void run(){
-            while(true){
-                if(!Hero.isAlive()){
-                    System.out.println("YOU DIED!!!");
-                    Hero.PrintDeath();
-                    try{
-                        Thread.sleep(5000);
-                    }catch(Exception e){
-                        e.printStackTrace();
+            while(flag){
+                //every 12 min is a day and night.
+                if(stat==STAT_GAME || stat==STAT_BAG) {
+                    timer += 1;
+                    if (timer == 7200) {
+                        timer = 0;
                     }
-                    Hero=new hero();
+                    if (!Hero.isAlive()) {
+                        System.out.println("YOU DIED!!!");
+                        Hero.PrintDeath();
+                        try {
+                            Thread.sleep(5000);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Hero = new hero();
+                    }
+                    //remain focused
+                    landGenerator.Focus_x = Hero.getX();
+                    landGenerator.Focus_y = Hero.getY();
+                    RareEventGenerator();
+                    MonsterGenerator();
                 }
-                //remain focused
-                landGenerator.Focus_x=Hero.getX();
-                landGenerator.Focus_y=Hero.getY();
-                RareEventGenerator();
-                MonsterGenerator();
                 repaint();
                 try{
-                    Thread.sleep(50);
+                    Thread.sleep(60);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
@@ -122,6 +247,12 @@ public class MainPanel extends JPanel {
         private long DPressed=0;
         private long SPACEPressed=0;
         private long SPressed=0;
+        private void resetKey() {
+        	APressed=0;
+        	DPressed=0;
+        	SPACEPressed=0;
+        	SPressed=0;
+        }
         public void keyReleased(KeyEvent e){
             switch(stat){
                 case STAT_GAME:
@@ -137,12 +268,20 @@ public class MainPanel extends JPanel {
                 case STAT_START:
                     startKeyPressed(e);
                     break;
+                case STAT_PAUSE:
+                	pauseKeyPressed(e);
+                	break;
                 case STAT_BAG:
+                	bagKeyPressed(e);
                     break;
             }
         }
         private void startKeyPressed(KeyEvent e){
-
+        	switch(e.getKeyCode()) {
+        	case VK_ENTER:
+        		gameResume();
+        		break;
+        	}
         }
         private void gameKeyReleased(KeyEvent e){
             switch(e.getKeyCode()){
@@ -160,6 +299,54 @@ public class MainPanel extends JPanel {
                     break;
             }
             locateDirection();
+        }
+        private void bagKeyPressed(KeyEvent e) {
+        	switch(e.getKeyCode()) {
+        	case VK_E:
+        		resetKey();
+        		gameResume();
+        		break;
+        	case VK_W:
+        		bag.bagPressW();
+        		break;
+        	case VK_S:
+        		bag.bagPressS();
+        		break;
+        	case VK_A:
+        		bag.bagPressA();
+        		break;
+        	case VK_D:
+        		bag.bagPressD();
+        		break;
+        	case VK_ENTER:
+        		bag.bagPressENTER(inventory.getcurrent());
+        		resetKey();
+        		gameResume();
+        		break;
+        	}
+        }
+        private void pauseKeyPressed(KeyEvent e) {
+        	switch(e.getKeyCode()) {
+        	case VK_ENTER:
+        		resetKey();
+        		gameResume();
+                break;
+            case VK_F11:
+                heroX=Hero.gethX();
+                heroY=Hero.gethY();
+                archive.saveGame();
+                break;
+            case VK_F12:
+                archive.loadGame();
+                Hero.sethX(heroX);
+                Hero.sethY(heroY);
+                resetKey();
+                gameResume();
+                break;
+            case VK_R:
+                timer=0;
+                break;
+        	}
         }
         private void locateDirection(){
             Direction d=Direction.STOP;
@@ -208,8 +395,18 @@ public class MainPanel extends JPanel {
                     Inventory.setCurrent(5);
                     break;
                 case VK_E:
-
-                    break;
+                	bag=new backpack(Inventory.geta());
+                	openBag();
+                	break;
+                case VK_P:
+                	gamePause();
+                	break;
+                case VK_F12:
+                	archive.loadGame();
+                	Hero.sethX(heroX);
+                    Hero.sethY(heroY);
+                    resetKey();
+                    gameResume();
             }
             locateDirection();
         }

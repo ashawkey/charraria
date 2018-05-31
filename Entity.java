@@ -1,8 +1,10 @@
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Entity {
     protected static final int Block2EntityOffset=1000;
     protected int EntityNo = 0;  //null entity
+    protected String name;
     protected char symbol;
     protected Color color;
     protected int Total;
@@ -24,6 +26,9 @@ public class Entity {
     public double getWorkDist(){
         return WorkDist;
     }
+    void setTotal(int i) {
+    	Total=i;
+    }
 }
 
 class EntityBlock extends Entity{
@@ -31,12 +36,31 @@ class EntityBlock extends Entity{
     EntityBlock(Block b){
         super();
         block=b;
+        name=b.getClass().getName();
         stackable=true;
         symbol=b.symbol;
+        color=b.color;
         EntityNo=b.BlockNo+Block2EntityOffset;
         Total=1;
+        description=b.description;
         if(MainWindow.DEBUG==1) WorkDist=999;
         else WorkDist=10;
+    }
+    EntityBlock(Block b, int i){
+        super();
+        block=b;
+        name=b.getClass().getName();
+        stackable=true;
+        symbol=b.symbol;
+        color=b.color;
+        EntityNo=b.BlockNo+Block2EntityOffset;
+        Total=i;
+        description=b.description;
+        if(MainWindow.DEBUG==1) WorkDist=999;
+        else WorkDist=10;
+    }
+    void setTolal(int i) {
+    	Total=i;
     }
 }
 
@@ -49,6 +73,13 @@ abstract class Tools extends Entity{
         stackable=false;
         Total=1;
     }
+}
+abstract class Synthetic extends Entity{
+	 int [][] requirements;
+	Synthetic(){
+		super();
+	}
+	
 }
 
 
@@ -69,6 +100,7 @@ abstract class LongRangedWeapon extends Weapon{
 class Hand extends Weapon{
     Hand(){
         super();
+        name="Hand";
         DestroyAbility=5;
         attack=1;
         Slowness=100;  //ms
@@ -83,6 +115,7 @@ class Hand extends Weapon{
 class HandOfGod extends Weapon{
     HandOfGod(){
         super();
+        name="HandOfGod";
         DestroyAbility=999;
         attack=999;
         Slowness=10;
@@ -101,7 +134,7 @@ class Arrow extends LongRangedWeapon{
         attack=999;
         Slowness=1000;
         EntityNo=2;
-        symbol='←';
+        symbol='<';
         WorkDist=999;
         SPEED=1;
     }
