@@ -1,6 +1,4 @@
-import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
 
 abstract class Mobs{
     protected  int x;
@@ -29,14 +27,23 @@ public class hero extends Mobs{
     private int JUMPING_ABILITY;
     private int Defense=0;
     private int Attack=0;
+    private int Gravity=1;
     private static final int LifeProtectionTimeAfterDamaged=10;
     private int LifeRegenerationSpeed=100; //every 5s
     private static final char HeartSymbol='\u2665';
     hero(){
-        MAX_JUMP_HEIGHT=10;
         SPEED=1;
-        JUMPING_ABILITY=2;
         HP=10;
+        Gravity=1;
+        JUMPING_ABILITY=2;
+        MAX_JUMP_HEIGHT=10;
+        LifeRegenerationSpeed=100;
+        if(MainWindow.DEBUG==1){
+            Gravity=0;
+            JUMPING_ABILITY=2;
+            MAX_JUMP_HEIGHT=999;
+            LifeRegenerationSpeed=10;
+        }
         x=landGenerator.getWorWidth()/2;
         for(int yy=0;yy<landGenerator.getWorHeight();yy++){
             if(landGenerator.getWorldBlock(yy,x).BlockNo==0) {
@@ -100,10 +107,7 @@ public class hero extends Mobs{
     public void setDir(Direction d){
         dir=d;
     }
-    public void PrintDeath(){
-
-    }
-
+    public void PrintDeath(){ }
     private void move(){
         if(JUMP_flag==0) {
             if (Direction.containDir(dir, Direction.JUMP)) {
@@ -204,12 +208,24 @@ public class hero extends Mobs{
                 break;
             case STOP:
                 break;
+            case DOWN:
+                for(int s=0;s<JUMPING_ABILITY;s++) {
+                    Block b=landGenerator.getWorldBlock(y-1,x);
+                    Entity e=landGenerator.getWorldEntity(y-1,x);
+                    if ((!(e instanceof SolidMonsterEntity))&&b.permeable) {
+                        y -= 1;
+                    }
+                    else if(e instanceof SolidMonsterEntity){
+                        modifyHP(-((SolidMonsterEntity) e).damage);
+                    }
+                }
+                break;
         }
         //gravity
         Block b=landGenerator.getWorldBlock(y-1,x);
         Entity e=landGenerator.getWorldEntity(y-1,x);
         if((!(e instanceof SolidMonsterEntity))&&b.permeable){
-            y--;
+            y-=Gravity;
             fallingDistance++;
         }
         else if(e instanceof SolidMonsterEntity){

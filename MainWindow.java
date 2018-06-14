@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
-    public static final int DEBUG=1;
+    public static int DEBUG=1;
     public static void main(String[] args) {
         MainWindow m=new MainWindow();
     }

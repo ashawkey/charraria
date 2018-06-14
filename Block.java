@@ -40,7 +40,8 @@ class Dirt extends solidBlock {
         name="Dirt";
         BlockNo=1;
         life=30;
-        symbol='⛶';
+        //symbol='⛶';
+        symbol='+';
         color= new Color(80,26,0); //brown
         description="--dirt--";
 
@@ -292,7 +293,7 @@ class Coal extends solidBlock{
         BlockNo=18;
         life=30;
         symbol='m';
-        color=Color.BLACK;
+        color=new Color(200,200,200);
         description="--coal--";
     }
 }

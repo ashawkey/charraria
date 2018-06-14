@@ -1,11 +1,9 @@
-
-
 import java.awt.*;
 import java.util.*;
 
 public class landGenerator{
     public static final int WORLD_WID=1000;
-    private Random r=new Random(999);
+    private Random r=new Random();
     public static final int WORLD_HEIGHT=200;
     private static final int CloudHeight=WORLD_HEIGHT/2+40;
     private static final int HoleHeight=20;
@@ -70,6 +68,12 @@ public class landGenerator{
     1: recently not visited
     2~7202: recently visited
      */
+    public static int getvis(int y,int x) {
+    	return visited[y][x];
+    }
+    public static void setvis(int y,int x,int vis) {
+    	visited[y][x]=vis;
+    }
     private static int[][] light=new int[WORLD_HEIGHT][WORLD_WID];
     public static int getlight(int y,int x) {
     	return light[y][x];
@@ -190,17 +194,9 @@ public class landGenerator{
                         g.setFont(mainFont);
                         g.setColor(b.color);
                         //water flow animation
-                        /*
-                        if(b instanceof Sand){
-                            if(inWorld(j-1,i) && world[j-1][i].BlockNo==0){
-                                changeWorldBlock(j-1,i,new Sand());
-                                changeWorldBlock(j,i,new Air(0));
-                            }
-                        }
-                        */
                         if(b instanceof Water) {
                             if(((Water) b).volume<=1) {
-                                changeWorldBlock(j, i, new Air(0));
+                                //changeWorldBlock(j, i, new Air(0));
                                 continue;
                             }
                             int dx[]={0,1,-1};
@@ -271,6 +267,7 @@ public class landGenerator{
                         g.drawString(String.valueOf(b.symbol), (i - (Focus_x - window_offset_x)) * fontSize, MainWindow.getWinHeight() - (j - (Focus_y - window_offset_y)) * fontSize);
                     }
                     //entity layer
+                    /*
                     if(frontWorld[j][i]!=null)  {
                         Entity e=frontWorld[j][i];
                         if(e instanceof SolidMobsEntity){
@@ -280,12 +277,8 @@ public class landGenerator{
                                 continue;
                             }
                         }
-                        /*
-                        g.setFont(entityFont);
-                        g.setColor(e.color);
-                        g.drawString(String.valueOf(e.symbol),(i-(Focus_x-window_offset_x))*fontSize,MainWindow.getWinHeight()-(j-(Focus_y-window_offset_y))*fontSize);
-                        */
                     }
+                    */
                 }
             }
         }
@@ -445,7 +438,6 @@ public class landGenerator{
             while(life--!=0){
                 double nx=ImprovedNoise.noise(x*0.06,y*0.02,0);
                 double ny=ImprovedNoise.noise(x*0.03,y*0.04,0);
-                System.out.println(totalWorms+" "+nx+" "+ny);
                 if(nx>0) x++; else x--;
                 if(ny>0) y++; else y--;
                 for(int xi=x-(int)radius;xi<x+(int)radius;xi++){

@@ -6,6 +6,7 @@ public enum Direction {
     JUMP(1),
     LJUMP(3),
     RJUMP(5),
+    DOWN(-1),
     STOP(0);
 
     private static final Direction DIRs[]={L,R,JUMP,LJUMP,RJUMP,STOP};
@@ -29,6 +30,7 @@ public enum Direction {
     }
 
     public static boolean containDir(Direction base,Direction con){
+        if(base.value==-1) return false;
         if(base.value%2!=0 && con.value==1) return true;
         else if(con.value!=1&&base.value-1==con.value) return true;
         return false;

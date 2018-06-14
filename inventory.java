@@ -4,7 +4,6 @@ import java.util.ArrayList;
 public class inventory {
     private static final int InventoryFontSize=20;
     private Font InventoryFont=new Font("TimesNewRoman",Font.BOLD,InventoryFontSize);
-    private Font InventoryDescriptionFont=new Font("arial",Font.ITALIC,InventoryFontSize/2+5);
     private static int volume=10;
     private static int showvolume=7;
     private static int firstItem=0;
@@ -46,7 +45,6 @@ public class inventory {
             a.add(new EntityBlock(new BamboWood(),99));
             a.add(new EntityBlock(new BamboLeaf1(),99));
             a.add(new EntityBlock(new BamboLeaf2(),99));
-
         }
     }
     public static int getVolume() {
@@ -70,7 +68,9 @@ public class inventory {
     public boolean isFull(){
         return a.size()==volume;
     }
-
+    public void Clear(){
+        a.clear();
+    }
     public Entity getCurrent(){
         if(current>=a.size()){
             current=a.size()-1;
@@ -116,11 +116,6 @@ public class inventory {
     }
 
     public static void addEntity(Entity en){
-        /*
-        if(a.size()==volume) {
-            return false;
-        }
-        */
         System.out.println("ADD:"+en.symbol);
         System.out.println("ADD:"+en.name);
         if(a.contains(en) && a.get(a.indexOf(en)).stackable ){
@@ -168,11 +163,6 @@ public class inventory {
             else
             g.drawString(String.valueOf(99), 25*(2*(i-firstItem))+25,18);
         }
-        /*
-        g.setColor(Color.white);
-        g.setFont(InventoryDescriptionFont);
-        g.drawString(d.toString(),10,40);
-        */
     }
 
 }

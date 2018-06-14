@@ -19,7 +19,7 @@ public class archive {
         try {
             loadStream = new ObjectInputStream(
                     new BufferedInputStream(
-                    new FileInputStream("./.game_save.sav")));
+                    new FileInputStream("./save/.game_save.sav")));
             archive=null;
             archive = (Archive)loadStream.readObject();
             loadStream.close();
@@ -52,7 +52,7 @@ public class archive {
         try {
             saveStream = new ObjectOutputStream(
                     new BufferedOutputStream(
-                    new FileOutputStream("./.game_save.sav")));
+                    new FileOutputStream("./save/.game_save.sav")));
             saveStream.writeObject(archive);
             saveStream.close();
             System.out.println("Archive has been written.");
@@ -69,14 +69,9 @@ public class archive {
         }
 
     }
-    
-    
-    
-    
     public static void saveArchive() {
       archive.save();
   }
-  
     public static void loadArchive() {
       archive.load();
   }
@@ -91,14 +86,15 @@ public class archive {
             archive = null;
         }
     }
-    public static void loadGame() {
+    public static boolean loadGame() {
     	archive = new Archive();
         if (!readArchive()) {
-            return;
+            return false;
         }
         loadArchive();
         archive = null;
         MainPanel.stat = MainPanel.STAT_GAME;
+        return true;
     }
     private static class Archive implements Serializable {
     	/**
@@ -117,6 +113,7 @@ public class archive {
         private int [] invItemNo;
         private int [] invItemNum;
         private int [][] light;
+        private int [][] visited;
         private int timer;
         
         public Archive() {
@@ -124,6 +121,7 @@ public class archive {
         	backWorld = new int[200][1000];
         	frontWorld = new int[200][1000];
         	light= new int [200][1000];
+        	visited= new int [200][1000];
         }
         void save() {
         	timer=MainPanel.gettimer();
@@ -144,11 +142,12 @@ public class archive {
             	System.out.println("i="+i);
             	for(int j=0;j<1000;j++) {
             		light[i][j]=landGenerator.getlight(i, j);
+            		visited[i][j]=landGenerator.getvis(i,j);
             		world[i][j]=landGenerator.getWorldBlock(i,j).getBlockNo();
             		//frontWorld[i][j]=landGenerator.getWorldEntity(i, j).getEntityNo();
             		if(landGenerator.getbackWorldBlock(i, j)!=null)
             		backWorld[i][j]=landGenerator.getbackWorldBlock(i, j).getBlockNo();
-            		System.out.print(world[i][j]+" ");
+            		//System.out.print(world[i][j]+" ");
             	}
             }
         }
@@ -163,6 +162,7 @@ public class archive {
             for(int i=0;i<landGenerator.getWorHeight();i++) {
             	for(int j=0;j<landGenerator.getWorWidth();j++) {
             		landGenerator.setlight(i, j, light[i][j]);
+            		landGenerator.setvis(i, j, visited[i][j]);
             		Block Worldtmp = null;
             		Block backWorldtmp = null;
             		Entity frontWorldtmp = null;
