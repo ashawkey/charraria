@@ -82,7 +82,7 @@ public class MainPanel extends JPanel {
                     Monster M=iM.next();
                     if(distance(M.getX(),0,Hero.getX(),0)>dispearDistance){
                         iM.remove();
-                        landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+                        landGenerator.changeWorldEntity(M.getY(),M.getX(),new Entity());
                     }
                     else if(!M.isAlive()){
                         //drops
@@ -92,7 +92,7 @@ public class MainPanel extends JPanel {
                         }
                         //remove
                         iM.remove();
-                        landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+                        landGenerator.changeWorldEntity(M.getY(),M.getX(),new Entity());
                     }
                 }
                 for(Monster M:Monsters){
@@ -119,7 +119,7 @@ public class MainPanel extends JPanel {
                     Monster M=iM1.next();
                     if(distance(M.getX(),0,Hero.getX(),0)>dispearDistance){
                         iM1.remove();
-                        landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+                        landGenerator.changeWorldEntity(M.getY(),M.getX(),new Entity());
                     }
                     else if(!M.isAlive()){
                         //drops
@@ -129,7 +129,7 @@ public class MainPanel extends JPanel {
                         }
                         //remove
                         iM1.remove();
-                        landGenerator.changeWorldBlock(M.getY(),M.getX(),new Air(0));
+                        landGenerator.changeWorldEntity(M.getY(),M.getX(),new Entity());
                     }
                 }
                 for(Monster M:Monsters){

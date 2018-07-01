@@ -74,14 +74,6 @@ abstract class Tools extends Entity{
         Total=1;
     }
 }
-abstract class Synthetic extends Entity{
-	 int [][] requirements;
-	Synthetic(){
-		super();
-	}
-	
-}
-
 
 abstract class Weapon extends Tools{
     int attack;

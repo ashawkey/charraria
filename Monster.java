@@ -19,7 +19,7 @@ public abstract class Monster extends Mobs{
     private int JUMPloop=0;
     private static int MAX_JUMP_HEIGHT;
     private static int JUMPING_ABILITY;
-    private void move(){
+    public void move(){
         if(JUMP_flag==0) {
             if (Direction.containDir(dir, Direction.JUMP)) {
                 JUMPloop++;
@@ -191,7 +191,7 @@ class Slime extends Monster{
     public ArrayList<Entity> Drops(){
         ArrayList<Entity> drops=new ArrayList<Entity>();
         int r=rand.nextInt(100);
-        if(r>50){
+        if(r>10){
             drops.add(new Arrow());
         }
         return drops;

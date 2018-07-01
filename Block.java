@@ -314,6 +314,7 @@ class Torch extends solidBlock{
 		super();
 		light=15;
 		Syntheticable=true;
+		permeable=true;
 		requirements=new int [][] {{1004,2},{1018,1}};
 		name="Torch";
 		BlockNo=20;

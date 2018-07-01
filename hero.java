@@ -16,6 +16,7 @@ abstract class Mobs{
     public int getY(){
         return y;
     }
+    abstract public void move();
 }
 
 
@@ -108,7 +109,7 @@ public class hero extends Mobs{
         dir=d;
     }
     public void PrintDeath(){ }
-    private void move(){
+    public void move(){
         if(JUMP_flag==0) {
             if (Direction.containDir(dir, Direction.JUMP)) {
                 JUMPloop++;
